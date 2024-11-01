@@ -1,12 +1,14 @@
 using DataAccess;
 using DataAccess.Entities;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Service;
 using Service.Blog;
 using Service.Draft;
 using Service.Repositories;
+
 
 namespace Api;
 
@@ -38,6 +40,12 @@ public class Program
         #endregion
 
         #region Security
+        builder.Services.AddSingleton<IPasswordHasher<User>, Argon2IdPasswordHasher<User>>();
+        builder
+            .Services.AddIdentityApiEndpoints<User>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
+        
         #endregion
 
         #region Services

@@ -1,4 +1,4 @@
-import { Credentials } from "../../atoms/auth";
+import { Credentials, useAuth } from "../../atoms/auth";
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,9 +18,14 @@ export default function Login() {
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
 
+  const { login } = useAuth();
+
   const onSubmit: SubmitHandler<Credentials> = (data) => {
-    // TODO login and give user feedback
-    toast(`Login as "${data.email}". Implementation is missing!`);
+    toast.promise(login(data), {
+      success: "Logged in successfully",
+      error: "Invalid credentials",
+      loading: "Logging in...",
+    });
   };
 
   return (

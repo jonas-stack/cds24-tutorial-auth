@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Service;
 
-public sealed class AppOptions
+public sealed class AppOptions      
 {
     [Required]
     public required string JwtSecret { get; set; }
