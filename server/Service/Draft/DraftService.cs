@@ -1,4 +1,5 @@
 using FluentValidation;
+using Service.Draft.Dto;
 using Service.Repositories;
 using Entities = DataAccess.Entities;
 
@@ -7,22 +8,22 @@ namespace Service.Draft;
 public class DraftService(
     IRepository<Entities.Post> _postRepository,
     IRepository<Entities.User> _userRepository,
-    IValidator<Dto.DraftFormData> _draftValidator
+    IValidator<DraftFormData> _draftValidator
 ) : IDraftService
 {
     public static string[] AllowedRoles => [Role.Admin, Role.Editor];
 
-    public Dto.DraftDetail GetById(long id)
+    public DraftDetail GetById(long id)
     {
         var post =
             _postRepository.Query().SingleOrDefault(x => x.Id == id)
             ?? throw new NotFoundError(nameof(Entities.Post), new { Id = id });
         var user = _userRepository.Query().SingleOrDefault(x => x.Id == post.AuthorId)!;
-        return new Dto.DraftDetail(
-            Id: post.Id,
-            Title: post.Title,
-            Content: post.Content,
-            Author: new Dto.Writer(user.Id, user.UserName!)
+        return new DraftDetail(
+            post.Id,
+            post.Title,
+            post.Content,
+            new Writer(user.Id, user.UserName!)
         );
     }
 
@@ -40,11 +41,11 @@ public class DraftService(
             .Select(x => new Dto.Draft(
                 x.post.Id,
                 x.post.Title,
-                new Dto.Writer(x.user.Id, x.user!.UserName!)
+                new Writer(x.user.Id, x.user!.UserName!)
             ));
     }
 
-    public async Task<long> Create(Dto.DraftFormData data)
+    public async Task<long> Create(DraftFormData data)
     {
         _draftValidator.ValidateAndThrow(data);
         var post = new Entities.Post
@@ -54,13 +55,13 @@ public class DraftService(
             AuthorId = null, // TODO fix
             PublishedAt = data.Publish ?? false ? DateTime.UtcNow : null,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
         await _postRepository.Add(post);
         return post.Id;
     }
 
-    public async Task Update(long id, Dto.DraftFormData data)
+    public async Task Update(long id, DraftFormData data)
     {
         _draftValidator.ValidateAndThrow(data);
         var post =
@@ -69,10 +70,7 @@ public class DraftService(
         post.Title = data.Title;
         post.Content = data.Content;
         post.UpdatedAt = DateTime.UtcNow;
-        if (data.Publish ?? false)
-        {
-            post.PublishedAt = DateTime.UtcNow;
-        }
+        if (data.Publish ?? false) post.PublishedAt = DateTime.UtcNow;
         await _postRepository.Update(post);
     }
 

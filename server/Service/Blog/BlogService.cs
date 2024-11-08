@@ -1,18 +1,18 @@
-using System.Security.Claims;
 using FluentValidation;
+using Service.Blog.Dto;
 using Service.Repositories;
 using Entities = DataAccess.Entities;
 
 namespace Service.Blog;
 
 public class BlogService(
-    IRepository<DataAccess.Entities.Post> _postRepository,
+    IRepository<Entities.Post> _postRepository,
     IRepository<Entities.User> _userRepository,
     IRepository<Entities.Comment> _commentRepository,
-    IValidator<Dto.CommentFormData> _commentValidator
+    IValidator<CommentFormData> _commentValidator
 ) : IBlogService
 {
-    public Dto.PostDetail GetById(long id)
+    public PostDetail GetById(long id)
     {
         var comments = _commentRepository
             .Query()
@@ -44,29 +44,26 @@ public class BlogService(
                     }
             )
             .Where(post => post.post.Id == id && post.post.PublishedAt != null)
-            .Select(post => new Dto.PostDetail(
+            .Select(post => new PostDetail(
                 post.post.Id,
                 post.post.Title,
                 post.post.Content,
-                new Dto.Author(post.user.Id, post.user.UserName!),
-                post.comments.Select(comment => new Dto.CommentForPost(
+                new Author(post.user.Id, post.user.UserName!),
+                post.comments.Select(comment => new CommentForPost(
                     comment.comment.Id,
                     comment.comment.Content,
                     comment.comment.CreatedAt,
-                    new Dto.Author(comment.user.Id, comment.user.UserName!)
+                    new Author(comment.user.Id, comment.user.UserName!)
                 )),
                 (DateTime)post.post.PublishedAt!,
                 post.post.UpdatedAt > post.post.PublishedAt ? post.post.UpdatedAt : null
             ))
             .FirstOrDefault();
-        if (post == null)
-        {
-            throw new NotFoundError(nameof(Dto.PostDetail), new { Id = id });
-        }
+        if (post == null) throw new NotFoundError(nameof(PostDetail), new { Id = id });
         return post;
     }
 
-    public IEnumerable<Dto.Post> Newest(Dto.PostsQuery query)
+    public IEnumerable<Post> Newest(PostsQuery query)
     {
         const int pageSize = 10;
         return _postRepository
@@ -81,17 +78,17 @@ public class BlogService(
                 user => user.Id,
                 (post, user) => new { post, user }
             )
-            .Select(x => new Dto.Post(
+            .Select(x => new Post(
                 x.post.Id,
                 x.post.Title,
                 x.post.Content,
-                new Dto.Author(x.user.Id, x.user!.UserName!),
+                new Author(x.user.Id, x.user!.UserName!),
                 (DateTime)x.post.PublishedAt!,
                 x.post.UpdatedAt > x.post.PublishedAt ? x.post.UpdatedAt : null
             ));
     }
 
-    public async Task<long> CreateComment(long postId, Dto.CommentFormData data)
+    public async Task<long> CreateComment(long postId, CommentFormData data)
     {
         _commentValidator.ValidateAndThrow(data);
         var comment = new Entities.Comment
@@ -99,7 +96,7 @@ public class BlogService(
             Content = data.Content,
             AuthorId = data.AuthorId,
             PostId = postId,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
         };
         await _commentRepository.Add(comment);
         return comment.Id;

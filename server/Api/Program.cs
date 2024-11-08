@@ -1,12 +1,14 @@
 using DataAccess;
 using DataAccess.Entities;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Service;
 using Service.Blog;
 using Service.Draft;
 using Service.Repositories;
+using Service.Security;
 
 namespace Api;
 
@@ -17,14 +19,17 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         #region Configuration
+
         builder
             .Services.AddOptionsWithValidateOnStart<AppOptions>()
             .Bind(builder.Configuration.GetSection(nameof(AppOptions)))
             .ValidateDataAnnotations();
         builder.Services.AddSingleton(_ => TimeProvider.System);
+
         #endregion
 
         #region Data Access
+
         var connectionString = builder.Configuration.GetConnectionString("AppDb");
         builder.Services.AddDbContext<AppDbContext>(options =>
             options
@@ -35,18 +40,29 @@ public class Program
         builder.Services.AddScoped<IRepository<User>, UserRepository>();
         builder.Services.AddScoped<IRepository<Post>, PostRepository>();
         builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
+
         #endregion
 
         #region Security
+
+        builder
+            .Services.AddIdentityApiEndpoints<User>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
+        builder.Services.AddSingleton<IPasswordHasher<User>, Argon2idPasswordHasher<User>>();
+
         #endregion
 
         #region Services
+
         builder.Services.AddValidatorsFromAssemblyContaining<ServiceAssembly>();
         builder.Services.AddScoped<IBlogService, BlogService>();
         builder.Services.AddScoped<IDraftService, DraftService>();
+
         #endregion
 
         #region Swagger
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
@@ -59,7 +75,7 @@ public class Program
                     Description = "Please insert JWT with Bearer into field",
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
+                    Scheme = "Bearer"
                 }
             );
             c.AddSecurityRequirement(
@@ -82,6 +98,7 @@ public class Program
                 }
             );
         });
+
         #endregion
 
         builder.Services.AddControllers();
@@ -102,15 +119,9 @@ public class Program
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger(c =>
-            {
-                c.RouteTemplate = "api/swagger/{documentname}/swagger.json";
-            });
+            app.UseSwagger(c => { c.RouteTemplate = "api/swagger/{documentname}/swagger.json"; });
 
-            app.UseSwaggerUI(c =>
-            {
-                c.RoutePrefix = "api/swagger";
-            });
+            app.UseSwaggerUI(c => { c.RoutePrefix = "api/swagger"; });
         }
 
         app.UseHttpsRedirection();

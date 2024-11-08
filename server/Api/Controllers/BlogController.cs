@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Blog;
 using Service.Blog.Dto;
@@ -13,12 +12,17 @@ public class BlogController(IBlogService blogService) : ControllerBase
 
     [HttpGet]
     [Route("")]
-    public IEnumerable<Post> List([FromQuery] int? page) =>
-        blogService.Newest(new PostsQuery(page ?? 0));
+    public IEnumerable<Post> List([FromQuery] int? page)
+    {
+        return blogService.Newest(new PostsQuery(page ?? 0));
+    }
 
     [HttpGet]
     [Route("{id}")]
-    public PostDetail Get(long id) => blogService.GetById(id);
+    public PostDetail Get(long id)
+    {
+        return blogService.GetById(id);
+    }
 
     [HttpPost]
     [Route("{id}/comment")]

@@ -12,21 +12,36 @@ public class DraftController(IDraftService service) : ControllerBase
 
     [HttpGet]
     [Route("")]
-    public IEnumerable<Draft> List() => service.List();
+    public IEnumerable<Draft> List()
+    {
+        return service.List();
+    }
 
     [HttpPost]
     [Route("")]
-    public async Task<long> Create(DraftFormData data) => await service.Create(data);
+    public async Task<long> Create(DraftFormData data)
+    {
+        return await service.Create(data);
+    }
 
     [HttpGet]
     [Route("{id}")]
-    public DraftDetail Get(long id) => service.GetById(id);
+    public DraftDetail Get(long id)
+    {
+        return service.GetById(id);
+    }
 
     [HttpPut]
     [Route("{id}")]
-    public async Task Update(long id, DraftFormData data) => await service.Update(id, data);
+    public async Task Update(long id, DraftFormData data)
+    {
+        await service.Update(id, data);
+    }
 
     [HttpDelete]
     [Route("{id}")]
-    public async Task Delete(long id) => await service.Delete(id);
+    public async Task Delete(long id)
+    {
+        await service.Delete(id);
+    }
 }

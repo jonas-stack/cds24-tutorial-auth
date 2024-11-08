@@ -5,10 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace DataAccess.Entities;
 
 [Index("AuthorId", Name = "IX_Posts_AuthorId")]
-public partial class Post
+public class Post
 {
-    [Key]
-    public long Id { get; set; }
+    [Key] public long Id { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -23,6 +22,5 @@ public partial class Post
     public string? AuthorId { get; set; } = null;
     public User? Author { get; set; }
 
-    [InverseProperty("Post")]
-    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    [InverseProperty("Post")] public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

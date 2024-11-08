@@ -9,11 +9,17 @@ public class NotFoundError(string type, object Properties) : AppError($"{type}({
     public object Properties { get; } = Properties;
 }
 
-public class UnauthorizedError(string type) : AppError($"Operation not authorized for {type}!") { }
+public class UnauthorizedError(string type) : AppError($"Operation not authorized for {type}!")
+{
+}
 
-public class ForbiddenError() : AppError("Forbiddden!") { }
+public class ForbiddenError() : AppError("Forbiddden!")
+{
+}
 
-public class AuthenticationError() : AppError("Unable to authenticate!") { }
+public class AuthenticationError() : AppError("Unable to authenticate!")
+{
+}
 
 public class ValidationError(IDictionary<string, string[]> Errors) : AppError("Validation failed!")
 {

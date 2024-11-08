@@ -6,10 +6,9 @@ namespace DataAccess.Entities;
 
 [Index("AuthorId", Name = "IX_Comments_AuthorId")]
 [Index("PostId", Name = "IX_Comments_PostId")]
-public partial class Comment
+public class Comment
 {
-    [Key]
-    public long Id { get; set; }
+    [Key] public long Id { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

@@ -1,10 +1,12 @@
+using Service.Draft.Dto;
+
 namespace Service.Draft;
 
 public interface IDraftService
 {
-    Dto.DraftDetail GetById(long id);
+    DraftDetail GetById(long id);
     IEnumerable<Dto.Draft> List();
-    Task<long> Create(Dto.DraftFormData data);
-    Task Update(long id, Dto.DraftFormData data);
+    Task<long> Create(DraftFormData data);
+    Task Update(long id, DraftFormData data);
     Task Delete(long id);
 }

@@ -1,9 +1,10 @@
+using FluentValidation;
 using Service;
 
 public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate next = next;
     private readonly ILogger<ErrorHandlingMiddleware> logger = logger;
+    private readonly RequestDelegate next = next;
 
     public async Task InvokeAsync(HttpContext ctx)
     {
@@ -14,11 +15,11 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         catch (Exception ex)
         {
             logger.LogError(ex.ToString(), ex);
-            if (ex is FluentValidation.ValidationException error)
+            if (ex is ValidationException error)
             {
                 var propertyErrors = error.Errors.ToDictionary(
-                    (key) => key.PropertyName.ToLower(),
-                    (value) => value.ErrorMessage
+                    key => key.PropertyName.ToLower(),
+                    value => value.ErrorMessage
                 );
                 ctx.Response.StatusCode = 400;
                 await ctx.Response.WriteAsJsonAsync(
@@ -33,10 +34,9 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
                     UnauthorizedError => 401,
                     ForbiddenError => 403,
                     ValidationError => 400,
-                    _ => 500,
+                    _ => 500
                 };
                 if (apiError is ValidationError)
-                {
                     await ctx.Response.WriteAsJsonAsync(
                         new
                         {
@@ -44,11 +44,8 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
                             errors = (apiError as ValidationError)?.Errors
                         }
                     );
-                }
                 else
-                {
                     await ctx.Response.WriteAsJsonAsync(new { error = apiError.Message });
-                }
             }
             else
             {

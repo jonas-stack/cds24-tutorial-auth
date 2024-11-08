@@ -36,11 +36,6 @@ public abstract class BaseRepository<T>(AppDbContext context) : IRepository<T> w
         await context.SaveChangesAsync();
     }
 
-    public T? Get(Func<T, bool> predicate)
-    {
-        return Set.Where(predicate).SingleOrDefault();
-    }
-
     public IQueryable<T> Query()
     {
         return Set;
@@ -50,5 +45,10 @@ public abstract class BaseRepository<T>(AppDbContext context) : IRepository<T> w
     {
         Set.Update(entity);
         await context.SaveChangesAsync();
+    }
+
+    public T? Get(Func<T, bool> predicate)
+    {
+        return Set.Where(predicate).SingleOrDefault();
     }
 }
