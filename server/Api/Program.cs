@@ -1,3 +1,4 @@
+using Api.Misc;
 using DataAccess;
 using DataAccess.Entities;
 using FluentValidation;
@@ -50,6 +51,7 @@ public class Program
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>();
         builder.Services.AddSingleton<IPasswordHasher<User>, Argon2idPasswordHasher<User>>();
+        builder.Services.AddSingleton<IEmailSender<User>, AppEmailSender>();
 
         #endregion
 
